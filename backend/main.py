@@ -20,15 +20,15 @@ app.add_middleware(
 
 class PromptRequest(BaseModel):
     prompt: str
+    model: str
 
 OLLAMA_API_URL = "http://localhost:11434/api/generate"
-CODEGEN_MODEL = "codegemma:2b"
 
 @app.post("/generate")
 def generate_code(data: PromptRequest):
     print("End point hit!")
     payload = {
-        "model": CODEGEN_MODEL,
+        "model": data.model,
         "prompt": data.prompt,
         "stream": False
     }

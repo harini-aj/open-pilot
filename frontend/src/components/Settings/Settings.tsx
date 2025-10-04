@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Box,
   Button,
   Dialog,
   DialogActions,
@@ -65,19 +64,16 @@ export default function Settings({ open, onClose, onSave }: SettingsProps) {
         )}
         <TextField
             label="Exclusion List"
-            placeholder="Comma seperated exclusion path, node_modelue, verv, etc.."
+            placeholder="Comma separated exclusion path, node_module, verb, etc.."
             fullWidth
             margin="normal"
             value={exclusions}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => setExclusions(e.target.value)}
         />
-
-
-
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSave}>
+        <Button variant="contained" disabled={!inputValue} onClick={handleSave}>
           Add
         </Button>
       </DialogActions>
