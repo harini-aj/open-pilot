@@ -13,22 +13,55 @@ clone the git repo
     
 Create the Next.js 14+ App (inside the cloned folder)
 
+    npx create-next-app@latest . --ts --app --tailwind --eslint
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Run test app
+
+    npm run build
+    npm run start / npm start
+    npm run dev # autoload on change
+
+Setup Material UI
+
+    npm install @mui/material @emotion/react @emotion/styled
+    npm install @mui/icons-material
+
+### Setup Python FastAPI (fine tuning code resides)
+
+Create a Python Virtual Environment
+
+        python -m venv venv
+        source venv/bin/activate  # Use venv\Scripts\activate on Windows
+        
+Install FastAPI and Uvicorn
+  
+      pip install fastapi uvicorn
+      
+Add dependencies to server/requirements.txt
+
+      fastapi
+      uvicorn
+
+## To start the environment
+
+UI
+
+    npm run dev
+
+FastAPI
+
+    cd server
+    venv\Scripts\activate
+    uvicorn main:app --reload
+
+    
+ 
 
 ## Getting Started
 
-First, run the development server:
+``` backend\venv\Scripts\activate
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
