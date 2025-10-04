@@ -1,6 +1,8 @@
 import ChatWindow from './components/ChatWindow/ChatWindow'
 import Settings from './components/Settings/Settings';
+import TagsList from './components/ModelChooser/TagsList';
 import SettingsIcon from "@mui/icons-material/Settings";
+import ListIcon from '@mui/icons-material/List';
 import Fab from "@mui/material/Fab";
 import axios from 'axios';
 
@@ -8,13 +10,14 @@ import './App.css'
 import { useState } from 'react';
 
 function App() {
-  const [open, setOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isModelsOpen, setIsModelsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const handleTrain = async (data: { mode: "git" | "local"; value: string }) => {
     try {
       setLoading(true);
-      setOpen(false);
+      setIsSettingsOpen(false);
       const res = await axios.post("http://127.0.0.1:8000/train", data);
       alert(res.data.message);
     } catch (err) {
@@ -36,16 +39,34 @@ function App() {
             top: 8,
             right: 8,
         }}
-        onClick={() => setOpen(true)} 
+        onClick={() => setIsSettingsOpen(true)} 
         disabled={loading}
         >
         <SettingsIcon />
       </Fab>
+      <Fab
+        color="primary"
+        aria-label="models"
+        size="small"
+        sx={{
+            position: "absolute",
+            top: 60,
+            right: 8,
+        }}
+        onClick={() => setIsModelsOpen(true)} 
+        disabled={loading}
+        >
+        <ListIcon />
+      </Fab>
       <ChatWindow/>
       <Settings 
-        open={open} 
+        open={isSettingsOpen} 
         onSave={handleTrain} 
-        onClose={() => { setOpen(false) }} />
+        onClose={() => { setIsSettingsOpen(false) }} />
+      <TagsList 
+        open={isModelsOpen} 
+        onClose={() => { setIsModelsOpen(false) }} 
+        onSave={(selectedModel) => { localStorage.setItem("selectedModel", selectedModel);}} />
     </>
   )
 }

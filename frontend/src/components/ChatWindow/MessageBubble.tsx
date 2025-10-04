@@ -1,20 +1,34 @@
-import { Box, Typography, IconButton } from "@mui/material";
+import React, { useState } from "react";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Snackbar,
+} from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { materialDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import Editor from "@monaco-editor/react";
 
-export function MessageBubble({ msg }: { msg: { sender: string; text: string } }) {
+interface Message {
+  sender: string;
+  text: string;
+  isCode: boolean;
+}
+
+export function MessageBubble({ msg }: { msg: Message }) {
   const isUser = msg.sender === "user";
+  const [copied, setCopied] = useState(false);
 
-  // --- Split description & code ---
-  const codeRegex = /```(?:\w+)?\n([\s\S]*?)```/;
-  const match = msg.text.match(codeRegex);
-  const description = msg.text.replace(codeRegex, "").trim();
-  const code = match ? match[1] : null;
+  // Remove model artifacts before showing
+  function cleanText(text: string): string {
+    return text
+      .replace(/\[UNK_BYTE_[^\]]+\]/g, "") // remove UNK_BYTE tokens
+      .replace(/<\|.*?\|>/g, ""); // remove <|fim_...|> tokens
+  }
 
-  const copyToClipboard = () => {
-    if (code) navigator.clipboard.writeText(code);
-  };
+  function copyToClipboard(): void {
+    navigator.clipboard.writeText(cleanText(msg.text));
+    setCopied(true);
+  }
 
   return (
     <Box
@@ -24,35 +38,67 @@ export function MessageBubble({ msg }: { msg: { sender: string; text: string } }
       px={2}
       py={1}
       borderRadius={2}
+      display={isUser ? "inline-block" : "flex"}
+      width={isUser ? "auto" : msg.isCode ? "100%" : "auto"}
+      height={isUser ? "auto" : "100%"}
       maxWidth="80%"
-      sx={{ whiteSpace: "pre-wrap" }}
+      sx={{ whiteSpace: "pre-wrap", textAlign: "left" }}
     >
-      {/* Description */}
-      {description && (
-        <Typography variant="body2" mb={code ? 1 : 0}>
-          {description}
+      {/* User message */}
+      {!msg.isCode && (
+        <Typography variant="body2">
+          {msg.text}
         </Typography>
       )}
 
-      {/* Code Block with Copy */}
-      {code && (
-        <Box position="relative">
-          <SyntaxHighlighter
-            language="python" // change based on model response or detect dynamically
-            style={materialDark}
-            customStyle={{ borderRadius: "8px", padding: "12px" }}
-          >
-            {code}
-          </SyntaxHighlighter>
+      {/* Model (assistant) message */}
+      {msg.isCode && (
+        <Box position="relative" flex={1}>
+          <Editor
+            width="100%"
+            defaultLanguage="typescript"
+            value={cleanText(msg.text)}
+            theme="vs-dark"
+            options={{
+              readOnly: true,
+              minimap: { enabled: false },
+              wordWrap: "on",
+              scrollBeyondLastLine: false,
+              lineNumbers: "off",
+              folding: false,
+              glyphMargin: false,
+              renderLineHighlight: "none",
+            }}
+            onMount={(editor: import("monaco-editor").editor.IStandaloneCodeEditor) => {
+              const updateHeight = (): void => {
+                const height: number = Math.min(editor.getContentHeight(), 300);
+                editor.layout({
+                  width: editor.getLayoutInfo().width,
+                  height,
+                });
+              };
+              updateHeight();
+              editor.onDidContentSizeChange(updateHeight);
+            }}
+          />
+
           <IconButton
             size="small"
-            onClick={copyToClipboard}
+            onClick={copyToClipboard as React.MouseEventHandler<HTMLButtonElement>}
             sx={{ position: "absolute", top: 4, right: 4, color: "white" }}
           >
             <ContentCopyIcon fontSize="small" />
           </IconButton>
         </Box>
       )}
+
+      {/* Copy confirmation */}
+      <Snackbar
+        open={copied}
+        autoHideDuration={1500}
+        onClose={() => setCopied(false)}
+        message="Copied!"
+      />
     </Box>
   );
 }
